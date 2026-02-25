@@ -1,5 +1,6 @@
 # MAGA-English
-[A project by HSE Group 53 for the "MVP in DS" course (2026)] 
+[A project by HSE Group 53 for the "MVP in DS" course (2026)]
+
 A Telegram bot that allows you to learn and practice English by communicating with a digital copy of Donald Trump. The bot imitates his unique speech patterns: vocabulary, intonation in written form, characteristic interjections, and repetitions.
 
 # Описание проекта
