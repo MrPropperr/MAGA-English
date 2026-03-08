@@ -63,3 +63,105 @@ A Telegram bot that allows you to learn and practice English by communicating wi
 *   возвращаемость пользователей;
 *   среднее количество сообщений в одном сеансе;
 *   доля пользователей, купивших подписку.
+
+---
+
+# Развёртывание на Debian ( лучше 12)
+
+### 1. API-ключи для телеги и OpenAI
+
+- Получите токен для телеги формата: `7123456789:AAFxxxxxxxxxxxxxxx`
+
+- Токен для ГПТ  на [platform.openai.com](https://platform.openai.com/api-keys)
+
+### 2. Подготовить VPS (Debian 12)
+
+Что сделать на VPS ДО запуска бота:
+
+```bash
+sudo apt update && sudo apt upgrade -y
+curl -fsSL https://get.docker.com | sudo sh
+sudo usermod -aG docker $USER
+newgrp docker
+docker --version
+docker compose version
+```
+
+### 3. Клоним репу 
+
+```bash
+cd ~
+git clone https://github.com/MrPropperr/MAGA-English.git
+cd MAGA-English
+```
+
+### 4. Заполнить .env 
+
+На VPS:
+```bash
+cd ~/MAGA-English
+cp .env.example .env
+nano .env
+```
+
+вставьте ключи, можно без экранирования:
+```env
+BOT_TOKEN=
+OPENAI_API_KEY=
+```
+
+### 5. Сбилдите и запустите
+
+```bash
+docker compose up -d --build
+
+
+docker compose ps        # оба контейнера должны быть Up
+docker compose logs -f bot  # посмотреть логи 
+```
+
+**Должно быть `Starting bot polling...`**
+
+### 6. проверить работу бота
+
+1. Откройте Telegram
+3. Нажмите `/start`
+4. Потом нажмите кнопку "🎙 Начать урок / Поболтать"
+5. Напишите сообщение на английском
+
+Бот должен ответить от лица Трампа, используя характерные фразы и стиль, указанный в промпте.
+
+---
+
+## Важные команды
+
+```bash
+# Просмотр логов в реальном времени
+docker compose logs -f bot
+
+# Просмотр логов Redis
+docker compose logs -f redis
+
+# Остановить контейнеры
+docker compose stop
+
+# Перезапустить
+docker compose restart
+
+# Полностью остановить и удалить
+docker compose down
+
+# Пересобрать образ и запустить
+docker compose up -d --build
+
+# Проверить Redis вручную
+docker compose exec redis redis-cli
+# Внутри Redis CLI:
+# KEYS trump_bot:*             # показать все ключи пользователей
+# GET trump_bot:user:USERID:requests_today  # проверить счётчик запросов
+# LRANGE trump_bot:user:USERID:history 0 -1  # показать историю
+# FLUSHDB                      # очистить всю базу
+# EXIT                         # выйти
+```
+
+---
