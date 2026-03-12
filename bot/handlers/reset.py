@@ -8,8 +8,8 @@ from bot.services.redis_client import redis_client
 router = Router()
 
 RESET_TEXT = (
-    "Контекст сброшен. Начинаем новый разговор!\n\n"
-    "New conversation, new opportunities. Tremendous! Write your first message."
+    "New conversation, new opportunities. Tremendous! "
+    "Write your first message, my friend."
 )
 
 

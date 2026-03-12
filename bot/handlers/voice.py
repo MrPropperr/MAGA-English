@@ -17,21 +17,20 @@ logger = logging.getLogger(__name__)
 router = Router()
 
 LIMIT_EXCEEDED_TEXT = (
-    "Вы исчерпали дневной лимит сообщений. Возвращайтесь завтра!\n\n"
     "You've used all your messages for today. Come back tomorrow – "
-    "we'll make English great again! А пока можете подписаться на платный тариф (скоро)."
+    "we'll make English great again! Premium is coming soon."
 )
 
 API_ERROR_TEXT = (
-    "Извините, технические неполадки. Попробуйте через минуту. "
-    "Даже у лучших иногда бывают сбои!"
+    "Oops, something went wrong. Try again in a minute. "
+    "Even the best have bad days, believe me!"
 )
 
 
 def _tts_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="\U0001f50a Озвучить", callback_data="tts")]
+            [InlineKeyboardButton(text="\U0001f50a Listen", callback_data="tts")]
         ]
     )
 
@@ -66,7 +65,7 @@ async def handle_voice_message(message: Message) -> None:
 
     if not user_text:
         await message.answer(
-            "Не удалось распознать речь. Попробуйте ещё раз.",
+            "I couldn't understand your voice message. Try again, speak clearly!",
             reply_markup=main_keyboard,
         )
         return
@@ -114,17 +113,17 @@ async def handle_tts_callback(callback: CallbackQuery) -> None:
     if not audio:
         text = await redis_client.get_tts_text(message_id)
         if not text:
-            await callback.answer("Текст устарел, отправьте сообщение заново.")
+            await callback.answer("Message expired. Send a new one!")
             return
         try:
             audio = await synthesize_speech(text)
             await redis_client.save_tts_audio(message_id, audio)
         except Exception as exc:
             logger.error("TTS retry error: %s", exc)
-            await callback.answer("Попробуйте ещё раз")
+            await callback.answer("Try again!")
             return
 
-    await callback.message.answer_voice(
+    await callback.message.reply_voice(
         BufferedInputFile(audio, filename="reply.ogg"),
     )
     await callback.answer()

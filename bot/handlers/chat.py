@@ -14,14 +14,13 @@ logger = logging.getLogger(__name__)
 router = Router()
 
 LIMIT_EXCEEDED_TEXT = (
-    "Вы исчерпали дневной лимит сообщений. Возвращайтесь завтра!\n\n"
     "You've used all your messages for today. Come back tomorrow – "
-    "we'll make English great again! А пока можете подписаться на платный тариф (скоро)."
+    "we'll make English great again! Premium is coming soon."
 )
 
 API_ERROR_TEXT = (
-    "Извините, технические неполадки. Попробуйте через минуту. "
-    "Даже у лучших иногда бывают сбои!"
+    "Oops, something went wrong. Try again in a minute. "
+    "Even the best have bad days, believe me!"
 )
 
 START_CHAT_TEXT = (
