@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from io import BytesIO
 
@@ -33,6 +34,14 @@ def _tts_keyboard() -> InlineKeyboardMarkup:
             [InlineKeyboardButton(text="\U0001f50a Озвучить", callback_data="tts")]
         ]
     )
+
+
+async def _generate_and_cache_tts(message_id: int, text: str) -> None:
+    try:
+        audio = await synthesize_speech(text)
+        await redis_client.save_tts_audio(message_id, audio)
+    except Exception as exc:
+        logger.error("TTS background error for msg %s: %s", message_id, exc)
 
 
 @router.message(F.voice)
@@ -93,42 +102,32 @@ async def handle_voice_message(message: Message) -> None:
     )
 
     await redis_client.save_tts_text(sent.message_id, reply)
-
-    try:
-        audio = await synthesize_speech(reply)
-    except Exception as exc:
-        logger.error("TTS error for user %s: %s", user_id, exc)
-        return
-
-    await message.answer_voice(
-        BufferedInputFile(audio, filename="reply.ogg"),
-    )
-    try:
-        await sent.edit_reply_markup(reply_markup=None)
-    except Exception:
-        pass
+    asyncio.create_task(_generate_and_cache_tts(sent.message_id, reply))
 
 
 @router.callback_query(F.data == "tts")
 async def handle_tts_callback(callback: CallbackQuery) -> None:
     message_id = callback.message.message_id
-    text = await redis_client.get_tts_text(message_id)
 
-    if not text:
-        await callback.answer("Текст устарел, отправьте сообщение заново.")
-        return
+    audio = await redis_client.get_tts_audio(message_id)
 
-    try:
-        audio = await synthesize_speech(text)
-    except Exception as exc:
-        logger.error("TTS retry error: %s", exc)
-        await callback.answer("Попробуйте ещё раз")
-        return
+    if not audio:
+        text = await redis_client.get_tts_text(message_id)
+        if not text:
+            await callback.answer("Текст устарел, отправьте сообщение заново.")
+            return
+        try:
+            audio = await synthesize_speech(text)
+            await redis_client.save_tts_audio(message_id, audio)
+        except Exception as exc:
+            logger.error("TTS retry error: %s", exc)
+            await callback.answer("Попробуйте ещё раз")
+            return
 
     await callback.message.answer_voice(
         BufferedInputFile(audio, filename="reply.ogg"),
     )
-    await callback.answer("Готово!")
+    await callback.answer()
     try:
         await callback.message.edit_reply_markup(reply_markup=None)
     except Exception:

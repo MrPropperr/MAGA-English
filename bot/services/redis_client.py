@@ -1,3 +1,4 @@
+import base64
 import json
 from datetime import datetime, timezone
 
@@ -67,11 +68,20 @@ class RedisClient:
         return await self.get_requests_today(user_id) >= DAILY_LIMIT
 
     async def save_tts_text(self, message_id: int, text: str) -> None:
-        key = f"trump_bot:tts:{message_id}"
-        await self.r.set(key, text, ex=3600)
+        await self.r.set(f"trump_bot:tts:text:{message_id}", text, ex=3600)
 
     async def get_tts_text(self, message_id: int) -> str | None:
-        return await self.r.get(f"trump_bot:tts:{message_id}")
+        return await self.r.get(f"trump_bot:tts:text:{message_id}")
+
+    async def save_tts_audio(self, message_id: int, audio: bytes) -> None:
+        encoded = base64.b64encode(audio).decode("ascii")
+        await self.r.set(f"trump_bot:tts:audio:{message_id}", encoded, ex=3600)
+
+    async def get_tts_audio(self, message_id: int) -> bytes | None:
+        encoded = await self.r.get(f"trump_bot:tts:audio:{message_id}")
+        if encoded:
+            return base64.b64decode(encoded)
+        return None
 
 
 redis_client = RedisClient()
