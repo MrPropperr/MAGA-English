@@ -56,30 +56,21 @@ async def handle_chat_message(message: Message) -> None:
         await message.answer(LIMIT_EXCEEDED_TEXT, reply_markup=main_keyboard)
         return
 
-    # сообщение пользака сохраняем в истории
     await redis_client.append_message(user_id, "user", user_text)
-
-    # получаем историю
     history = await redis_client.get_history(user_id)
-
-    # индикатор набора для красоты
     await message.bot.send_chat_action(message.chat.id, "typing")
 
     try:
         reply = await get_trump_reply(history)
     except (APIError, APITimeoutError) as exc:
         logger.error("OpenAI error for user %s: %s", user_id, exc)
-        # показывает последний ответ 
         await redis_client.clear_history(user_id)
-        for msg in history[:-1]:  # восстанавливаем всё кроме последнего
+        for msg in history[:-1]:
             await redis_client.append_message(user_id, msg["role"], msg["content"])
         await message.answer(API_ERROR_TEXT, reply_markup=main_keyboard)
         return
 
-    # сохраняем ответ в истории
     await redis_client.append_message(user_id, "assistant", reply)
-
-    # работаем с лимитом
     count = await redis_client.increment_requests(user_id)
 
     remaining = DAILY_LIMIT - count

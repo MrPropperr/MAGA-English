@@ -15,3 +15,11 @@ OPENAI_MAX_TOKENS: int = 150
 OPENAI_TOP_P: float = 0.9
 OPENAI_FREQUENCY_PENALTY: float = 0.5
 OPENAI_PRESENCE_PENALTY: float = 0.3
+
+STT_MODEL: str = "gpt-4o-mini-transcribe"
+TTS_MODEL: str = "gpt-4o-mini-tts"
+TTS_VOICE: str = "ash"
+TTS_INSTRUCTIONS: str = (
+    "Speak as Donald Trump. Confident, bombastic, dramatic pauses. "
+    "Use his characteristic intonation and rhythm."
+)
