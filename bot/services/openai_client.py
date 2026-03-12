@@ -14,7 +14,6 @@ from bot.config import (
     STT_MODEL,
     TTS_MODEL,
     TTS_VOICE,
-    TTS_INSTRUCTIONS,
 )
 from bot.prompts import TRUMP_SYSTEM_PROMPT
 
@@ -57,7 +56,6 @@ async def synthesize_speech(text: str) -> bytes:
         model=TTS_MODEL,
         voice=TTS_VOICE,
         input=text,
-        instructions=TTS_INSTRUCTIONS,
         response_format="opus",
     )
     return response.content
