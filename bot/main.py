@@ -6,7 +6,12 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 
 from bot.config import BOT_TOKEN
-from bot.handlers import start, reset, voice, chat
+from bot.handlers import (
+    start, reset, level, topic, stats, daily,
+    payment, referral, quiz, leaderboard, achievements,
+    vocab, lessons,
+    voice, chat,
+)
 from bot.services.redis_client import redis_client
 
 logging.basicConfig(
@@ -25,6 +30,17 @@ async def main() -> None:
 
     dp.include_router(start.router)
     dp.include_router(reset.router)
+    dp.include_router(level.router)
+    dp.include_router(topic.router)
+    dp.include_router(stats.router)
+    dp.include_router(daily.router)
+    dp.include_router(payment.router)
+    dp.include_router(referral.router)
+    dp.include_router(quiz.router)
+    dp.include_router(leaderboard.router)
+    dp.include_router(achievements.router)
+    dp.include_router(vocab.router)
+    dp.include_router(lessons.router)
     dp.include_router(voice.router)
     dp.include_router(chat.router)
 
